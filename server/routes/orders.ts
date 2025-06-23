@@ -12,6 +12,7 @@ const orderSchema = z.object({
   }),
   orderDate: z.string().min(1, 'Sipariş tarihi zorunludur'),
   status: z.enum(['pending', 'delivered', 'cancelled']).optional().default('pending'),
+  quantity: z.number().int().positive('Miktar pozitif bir sayı olmalıdır').optional().default(1),
 });
 
 const orderUpdateSchema = orderSchema.partial();

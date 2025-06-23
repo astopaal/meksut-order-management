@@ -132,6 +132,9 @@ const Dashboard: React.FC = () => {
                     Saat
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Miktar
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Durum
                   </th>
                 </tr>
@@ -140,17 +143,31 @@ const Dashboard: React.FC = () => {
                 {todayOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {order.customerName}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {order.customerPhone}
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {order.customerName}
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            {order.customerPhone}
+                            <a
+                              href={`tel:${order.customerPhone}`}
+                              className="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              title="Ara"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h0a2.25 2.25 0 002.25-2.25v-2.386a2.25 2.25 0 00-1.687-2.183l-2.262-.565a2.25 2.25 0 00-2.591 1.01l-.422.704a11.978 11.978 0 01-5.31-5.31l.704-.422a2.25 2.25 0 001.01-2.591l-.565-2.262A2.25 2.25 0 006.886 2.25H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                              </svg>
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-900">
                       {order.deliveryTime === 'morning' ? 'Sabah' : 'Akşam'}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-900">
+                      {order.quantity} B
                     </td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>

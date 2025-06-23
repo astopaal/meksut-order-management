@@ -150,6 +150,9 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
                 Saat
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Miktar
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Durum
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -176,12 +179,15 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
                 <td className="px-6 py-4 text-sm text-gray-900">
                   {order.deliveryTime === 'morning' ? 'Sabah' : 'Akşam'}
                 </td>
+                <td className="px-6 py-4 text-sm text-gray-900">
+                  {order.quantity} L
+                </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                     {getStatusText(order.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm font-medium">
+                <td className="px-6 py-4">
                   <div className="flex space-x-3">
                     <button
                       onClick={() => onEdit(order)}
@@ -233,6 +239,12 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {order.deliveryTime === 'morning' ? 'Sabah' : 'Akşam'}
+                  </span>
+                  <span className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    {order.quantity} B
                   </span>
                 </div>
               </div>

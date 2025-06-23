@@ -12,6 +12,7 @@ export interface Order {
   deliveryTime: 'morning' | 'evening';
   orderDate: string;
   status: 'pending' | 'delivered' | 'cancelled';
+  quantity: number;
   created_at?: string;
   updated_at?: string;
   customerName?: string;
@@ -33,6 +34,7 @@ export interface OrderFormData {
   deliveryTime: 'morning' | 'evening';
   orderDate: string;
   status?: 'pending' | 'delivered' | 'cancelled';
+  quantity: number;
 }
 
 export interface DashboardStats {

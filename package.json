@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "server": "nodemon --exec tsx server/index.ts",
     "migrate": "tsx server/db/init.ts",
-    "start": "concurrently \"npm run server\" \"npm run dev\""
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
+    "start:legacy": "npm run server & npm run dev",
+    "start:simple": "npm run server"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.7",
@@ -38,7 +40,7 @@
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
-    "concurrently": "^8.2.2",
+    "concurrently": "^7.6.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
