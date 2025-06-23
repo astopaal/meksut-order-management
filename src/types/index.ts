@@ -109,4 +109,18 @@ export interface DailyDistribution {
   order_count: number;
   morning_orders: number;
   evening_orders: number;
+}
+
+// Yama Notları Tipleri
+export interface ChangelogEntry {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  version: string;
+}
+
+export interface ChangelogModalState {
+  isOpen: boolean;
+  showAgain: boolean;
 } 

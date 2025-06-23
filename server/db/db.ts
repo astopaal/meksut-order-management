@@ -42,6 +42,7 @@ export const initializeDatabase = async () => {
         table.enum('deliveryTime', ['morning', 'evening']).notNullable();
         table.string('orderDate').notNullable(); // ISO format
         table.enum('status', ['pending', 'delivered', 'cancelled']).defaultTo('pending');
+        table.integer('quantity').notNullable().defaultTo(1); // Süt miktarı
         table.timestamps(true, true);
       });
       console.log('Orders table created');
