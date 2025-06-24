@@ -17,6 +17,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
     phone: '',
+    address: '',
   });
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       setFormData({
         name: customer.name,
         phone: customer.phone,
+        address: customer.address || '',
       });
     }
   }, [customer]);
@@ -91,6 +93,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         </div>
       </div>
 
+      <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+          Adres
+        </label>
+        <input
+          type="text"
+          id="address"
+          name="address"
+          value={formData.address}
+          onChange={handleChange}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          placeholder="Açık adres"
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row gap-3 pt-6">
         <button
           type="submit"
@@ -130,4 +147,4 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   );
 };
 
-export default CustomerForm; 
+export default CustomerForm;

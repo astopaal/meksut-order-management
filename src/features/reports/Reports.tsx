@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import type { 
   CustomerAnalysis, 
   TopCustomer, 
@@ -104,7 +105,12 @@ const Reports: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8 overflow-x-auto">
@@ -132,26 +138,44 @@ const Reports: React.FC = () => {
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
+        <motion.div
+          className="space-y-6"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           {/* Daily Stats */}
           {dailyStats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="card text-center">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <motion.div className="card text-center" whileHover={{ scale: 1.04 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <div className="text-2xl font-bold text-blue-600">{dailyStats.daily_average}</div>
                 <div className="text-sm text-gray-600">Günlük Ortalama</div>
-              </div>
-              <div className="card text-center">
+              </motion.div>
+              <motion.div className="card text-center" whileHover={{ scale: 1.04 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
                 <div className="text-2xl font-bold text-green-600">{dailyStats.total_orders_30days}</div>
                 <div className="text-sm text-gray-600">Son 30 Gün</div>
-              </div>
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-yellow-600">{dailyStats.morning_orders}</div>
-                <div className="text-sm text-gray-600">Sabah Siparişleri</div>
-              </div>
-              <div className="card text-center">
-                <div className="text-2xl font-bold text-purple-600">{dailyStats.evening_orders}</div>
-                <div className="text-sm text-gray-600">Akşam Siparişleri</div>
-              </div>
+              </motion.div>
+              <motion.div className="card text-center" whileHover={{ scale: 1.04 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <div className="flex flex-row justify-center items-center gap-1">
+                  <span className="text-lg font-bold text-yellow-600">S: {dailyStats.morning_orders}</span>
+                  <span className="text-lg font-bold text-purple-600">A: {dailyStats.evening_orders}</span>
+                </div>
+                <div className="text-sm text-gray-600">Sabah & Akşam Siparişleri</div>
+              </motion.div>
+              <motion.div className="card text-center" whileHover={{ scale: 1.04 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                <div className="text-2xl font-bold text-purple-600">{
+                  dailyDistribution && dailyDistribution.length > 0
+                    ? (
+                        dailyDistribution.slice(0, 7).reduce((sum, day) => sum + (day.order_count ?? 0), 0) / Math.min(7, dailyDistribution.length)
+                      ).toFixed(1)
+                    : '-'
+                }</div>
+                <div className="text-sm text-gray-600">Son 1 Hafta Ortalama</div>
+              </motion.div>
+              <motion.div className="card text-center" whileHover={{ scale: 1.04 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <div className="text-2xl font-bold text-indigo-600">{dailyStats.total_orders_30days ? (dailyStats.total_orders_30days / 30).toFixed(1) : '-'}</div>
+                <div className="text-sm text-gray-600">Son 1 Ay Ortalama</div>
+              </motion.div>
             </div>
           )}
 
@@ -186,7 +210,7 @@ const Reports: React.FC = () => {
               </table>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Customers Tab */}
@@ -380,8 +404,8 @@ const Reports: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
-export default Reports; 
+export default Reports;

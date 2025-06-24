@@ -2,6 +2,7 @@ export interface Customer {
   id: number;
   name: string;
   phone: string;
+  address?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -22,11 +23,13 @@ export interface Order {
 export interface OrderWithCustomer extends Order {
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
 }
 
 export interface CustomerFormData {
   name: string;
   phone: string;
+  address?: string;
 }
 
 export interface OrderFormData {
@@ -123,4 +126,4 @@ export interface ChangelogEntry {
 export interface ChangelogModalState {
   isOpen: boolean;
   showAgain: boolean;
-} 
+}

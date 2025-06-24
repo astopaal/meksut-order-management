@@ -24,7 +24,8 @@ router.get('/', async (req, res) => {
       .select(
         'orders.*',
         'customers.name as customerName',
-        'customers.phone as customerPhone'
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress'
       )
       .join('customers', 'orders.customerId', 'customers.id')
       .orderBy('orders.orderDate', 'desc');
@@ -44,7 +45,8 @@ router.get('/daily/:date', async (req, res) => {
       .select(
         'orders.*',
         'customers.name as customerName',
-        'customers.phone as customerPhone'
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress'
       )
       .join('customers', 'orders.customerId', 'customers.id')
       .where('orders.orderDate', date)
@@ -66,7 +68,8 @@ router.get('/:id', async (req, res) => {
       .select(
         'orders.*',
         'customers.name as customerName',
-        'customers.phone as customerPhone'
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress'
       )
       .join('customers', 'orders.customerId', 'customers.id')
       .where('orders.id', id)
@@ -103,7 +106,8 @@ router.post('/', async (req, res) => {
       .select(
         'orders.*',
         'customers.name as customerName',
-        'customers.phone as customerPhone'
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress'
       )
       .join('customers', 'orders.customerId', 'customers.id')
       .where('orders.id', newOrder.id)
@@ -149,7 +153,8 @@ router.put('/:id', async (req, res) => {
       .select(
         'orders.*',
         'customers.name as customerName',
-        'customers.phone as customerPhone'
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress'
       )
       .join('customers', 'orders.customerId', 'customers.id')
       .where('orders.id', updatedOrder.id)
@@ -185,4 +190,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export { router as orderRoutes }; 
+export { router as orderRoutes };

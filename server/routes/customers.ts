@@ -8,6 +8,7 @@ const router = Router();
 const customerSchema = z.object({
   name: z.string().min(1, 'İsim zorunludur'),
   phone: z.string().min(10, 'Geçerli bir telefon numarası giriniz'),
+  address: z.string().optional(),
 });
 
 const customerUpdateSchema = customerSchema.partial();
@@ -128,4 +129,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export { router as customerRoutes }; 
+export { router as customerRoutes };

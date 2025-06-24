@@ -11,9 +11,9 @@ router.get('/customer-analysis', async (req, res) => {
         c.id,
         c.name,
         c.phone,
-        COUNT(o.id) as total_orders,
-        COUNT(CASE WHEN o.status = 'delivered' THEN 1 END) as delivered_orders,
-        COUNT(CASE WHEN o.status = 'pending' THEN 1 END) as pending_orders,
+        SUM(o.quantity) as total_orders,
+        SUM(CASE WHEN o.status = 'delivered' THEN o.quantity ELSE 0 END) as delivered_orders,
+        SUM(CASE WHEN o.status = 'pending' THEN o.quantity ELSE 0 END) as pending_orders,
         MIN(o.orderDate) as first_order_date,
         MAX(o.orderDate) as last_order_date,
         CASE 
@@ -49,9 +49,9 @@ router.get('/top-customers-30days', async (req, res) => {
       SELECT 
         c.name,
         c.phone,
-        COUNT(o.id) as order_count,
-        COUNT(CASE WHEN o.deliveryTime = 'morning' THEN 1 END) as morning_orders,
-        COUNT(CASE WHEN o.deliveryTime = 'evening' THEN 1 END) as evening_orders
+        SUM(o.quantity) as order_count,
+        SUM(CASE WHEN o.deliveryTime = 'morning' THEN o.quantity ELSE 0 END) as morning_orders,
+        SUM(CASE WHEN o.deliveryTime = 'evening' THEN o.quantity ELSE 0 END) as evening_orders
       FROM customers c
       INNER JOIN orders o ON c.id = o.customerId
       WHERE o.orderDate >= date('now', '-30 days')
@@ -72,12 +72,12 @@ router.get('/daily-average', async (req, res) => {
   try {
     const dailyStats = await db.raw(`
       SELECT 
-        COUNT(*) as total_orders_30days,
-        ROUND(COUNT(*) / 30.0, 1) as daily_average,
-        COUNT(CASE WHEN deliveryTime = 'morning' THEN 1 END) as morning_orders,
-        COUNT(CASE WHEN deliveryTime = 'evening' THEN 1 END) as evening_orders,
-        COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_orders,
-        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders
+        SUM(quantity) as total_orders_30days,
+        ROUND(SUM(quantity) / 30.0, 1) as daily_average,
+        SUM(CASE WHEN deliveryTime = 'morning' THEN quantity ELSE 0 END) as morning_orders,
+        SUM(CASE WHEN deliveryTime = 'evening' THEN quantity ELSE 0 END) as evening_orders,
+        SUM(CASE WHEN status = 'delivered' THEN quantity ELSE 0 END) as delivered_orders,
+        SUM(CASE WHEN status = 'pending' THEN quantity ELSE 0 END) as pending_orders
       FROM orders 
       WHERE orderDate >= date('now', '-30 days')
     `);
@@ -95,9 +95,9 @@ router.get('/weekly-trend', async (req, res) => {
     const weeklyTrend = await db.raw(`
       SELECT 
         strftime('%Y-%W', orderDate) as week,
-        COUNT(*) as order_count,
-        COUNT(CASE WHEN deliveryTime = 'morning' THEN 1 END) as morning_orders,
-        COUNT(CASE WHEN deliveryTime = 'evening' THEN 1 END) as evening_orders
+        SUM(quantity) as order_count,
+        SUM(CASE WHEN deliveryTime = 'morning' THEN quantity ELSE 0 END) as morning_orders,
+        SUM(CASE WHEN deliveryTime = 'evening' THEN quantity ELSE 0 END) as evening_orders
       FROM orders 
       WHERE orderDate >= date('now', '-56 days')
       GROUP BY strftime('%Y-%W', orderDate)
@@ -118,9 +118,9 @@ router.get('/monthly-trend', async (req, res) => {
     const monthlyTrend = await db.raw(`
       SELECT 
         strftime('%Y-%m', orderDate) as month,
-        COUNT(*) as order_count,
-        COUNT(CASE WHEN deliveryTime = 'morning' THEN 1 END) as morning_orders,
-        COUNT(CASE WHEN deliveryTime = 'evening' THEN 1 END) as evening_orders
+        SUM(quantity) as order_count,
+        SUM(CASE WHEN deliveryTime = 'morning' THEN quantity ELSE 0 END) as morning_orders,
+        SUM(CASE WHEN deliveryTime = 'evening' THEN quantity ELSE 0 END) as evening_orders
       FROM orders 
       WHERE orderDate >= date('now', '-365 days')
       GROUP BY strftime('%Y-%m', orderDate)
@@ -145,7 +145,7 @@ router.get('/inactive-customers', async (req, res) => {
         c.phone,
         MAX(o.orderDate) as last_order_date,
         ROUND(JULIANDAY('now') - JULIANDAY(MAX(o.orderDate)), 0) as days_inactive,
-        COUNT(o.id) as total_orders
+        SUM(o.quantity) as total_orders
       FROM customers c
       LEFT JOIN orders o ON c.id = o.customerId
       GROUP BY c.id, c.name, c.phone
@@ -166,8 +166,8 @@ router.get('/delivery-time-analysis', async (req, res) => {
     const deliveryAnalysis = await db.raw(`
       SELECT 
         deliveryTime,
-        COUNT(*) as order_count,
-        ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM orders), 1) as percentage
+        SUM(quantity) as order_count,
+        ROUND(SUM(quantity) * 100.0 / (SELECT SUM(quantity) FROM orders), 1) as percentage
       FROM orders 
       GROUP BY deliveryTime
       ORDER BY order_count DESC
@@ -186,9 +186,9 @@ router.get('/daily-distribution', async (req, res) => {
     const dailyDistribution = await db.raw(`
       SELECT 
         orderDate,
-        COUNT(*) as order_count,
-        COUNT(CASE WHEN deliveryTime = 'morning' THEN 1 END) as morning_orders,
-        COUNT(CASE WHEN deliveryTime = 'evening' THEN 1 END) as evening_orders
+        SUM(quantity) as order_count,
+        SUM(CASE WHEN deliveryTime = 'morning' THEN quantity ELSE 0 END) as morning_orders,
+        SUM(CASE WHEN deliveryTime = 'evening' THEN quantity ELSE 0 END) as evening_orders
       FROM orders 
       WHERE orderDate >= date('now', '-7 days')
       GROUP BY orderDate
@@ -202,4 +202,4 @@ router.get('/daily-distribution', async (req, res) => {
   }
 });
 
-export { router as reportRoutes }; 
+export { router as reportRoutes };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { OrderWithCustomer } from '../../types';
 import { orderAPI } from '../../services/api';
+import { motion } from 'framer-motion';
 
 interface OrderListProps {
   onEdit: (order: OrderWithCustomer) => void;
@@ -134,10 +135,13 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Desktop Table */}
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="hidden lg:block overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <motion.table className="min-w-full divide-y divide-gray-200" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -180,7 +184,7 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
                   {order.deliveryTime === 'morning' ? 'Sabah' : 'Akşam'}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {order.quantity} L
+                  {order.quantity} B
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
@@ -214,13 +218,13 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
               </tr>
             ))}
           </tbody>
-        </table>
+        </motion.table>
       </div>
 
       {/* Mobile Cards */}
-      <div className="lg:hidden space-y-4">
+      <div className="md:hidden space-y-3">
         {orders.map((order) => (
-          <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+          <motion.div key={order.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.03 }} transition={{ delay: 0.1 }}>
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -286,11 +290,11 @@ const OrderList: React.FC<OrderListProps> = ({ onEdit, onDelete }) => {
                 Sil
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default OrderList; 
+export default OrderList;

@@ -28,6 +28,7 @@ export const initializeDatabase = async () => {
         table.increments('id').primary();
         table.string('name').notNullable();
         table.string('phone').notNullable().unique();
+        table.string('address');
         table.timestamps(true, true);
       });
       console.log('Customers table created');
@@ -53,4 +54,4 @@ export const initializeDatabase = async () => {
     console.error('Database initialization error:', error);
     throw error;
   }
-}; 
+};
