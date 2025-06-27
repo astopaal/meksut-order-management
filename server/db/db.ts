@@ -13,9 +13,6 @@ export const db = knex({
     filename: dbPath,
   },
   useNullAsDefault: true,
-  migrations: {
-    directory: path.join(__dirname, 'migrations'),
-  },
 });
 
 // Veritabanı tablolarını oluştur
@@ -29,20 +26,9 @@ export const initializeDatabase = async () => {
         table.string('name').notNullable();
         table.string('phone').notNullable().unique();
         table.string('address');
-        table.string('location'); // Koordinat bilgisi (lat,lon formatında)
         table.timestamps(true, true);
       });
       console.log('Customer table created');
-    } else {
-      // Mevcut tabloya sadece eksik kolonları ekle (veriyi koru)
-      const hasLocationColumn = await db.schema.hasColumn('customer', 'location');
-      
-      if (!hasLocationColumn) {
-        await db.schema.alterTable('customer', (table) => {
-          table.string('location'); // Koordinat bilgisi (lat,lon formatında)
-        });
-        console.log('Location column added to customer table');
-      }
     }
 
     // Order tablosu
