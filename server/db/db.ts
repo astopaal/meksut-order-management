@@ -34,16 +34,8 @@ export const initializeDatabase = async () => {
       });
       console.log('Customer table created');
     } else {
-      // Mevcut tabloya eksik kolonları ekle
-      const hasAddressColumn = await db.schema.hasColumn('customer', 'address');
+      // Mevcut tabloya sadece eksik kolonları ekle (veriyi koru)
       const hasLocationColumn = await db.schema.hasColumn('customer', 'location');
-      
-      if (!hasAddressColumn) {
-        await db.schema.alterTable('customer', (table) => {
-          table.string('address');
-        });
-        console.log('Address column added to customer table');
-      }
       
       if (!hasLocationColumn) {
         await db.schema.alterTable('customer', (table) => {
