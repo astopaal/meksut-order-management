@@ -18,32 +18,32 @@ export const db = knex({
 // Veritabanı tablolarını oluştur
 export const initializeDatabase = async () => {
   try {
-    // Customer tablosu
-    const hasCustomerTable = await db.schema.hasTable('customer');
-    if (!hasCustomerTable) {
-      await db.schema.createTable('customer', (table) => {
+    // Customers tablosu
+    const hasCustomersTable = await db.schema.hasTable('customers');
+    if (!hasCustomersTable) {
+      await db.schema.createTable('customers', (table) => {
         table.increments('id').primary();
         table.string('name').notNullable();
         table.string('phone').notNullable().unique();
         table.string('address');
         table.timestamps(true, true);
       });
-      console.log('Customer table created');
+      console.log('Customers table created');
     }
 
-    // Order tablosu
-    const hasOrderTable = await db.schema.hasTable('order');
-    if (!hasOrderTable) {
-      await db.schema.createTable('order', (table) => {
+    // Orders tablosu
+    const hasOrdersTable = await db.schema.hasTable('orders');
+    if (!hasOrdersTable) {
+      await db.schema.createTable('orders', (table) => {
         table.increments('id').primary();
-        table.integer('customerId').unsigned().references('id').inTable('customer').onDelete('CASCADE');
+        table.integer('customerId').unsigned().references('id').inTable('customers').onDelete('CASCADE');
         table.enum('deliveryTime', ['morning', 'evening']).notNullable();
         table.string('orderDate').notNullable(); // ISO format
         table.enum('status', ['pending', 'delivered', 'cancelled']).defaultTo('pending');
         table.integer('quantity').notNullable().defaultTo(1); // Süt miktarı
         table.timestamps(true, true);
       });
-      console.log('Order table created');
+      console.log('Orders table created');
     }
 
     console.log('Database initialized successfully');
