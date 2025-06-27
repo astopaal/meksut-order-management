@@ -20,16 +20,16 @@ const orderUpdateSchema = orderSchema.partial();
 // Tüm siparişleri getir
 router.get('/', async (req, res) => {
   try {
-    const orders = await db('order')
+    const orders = await db('orders')
       .select(
-        'order.*',
-        'customer.name as customerName',
-        'customer.phone as customerPhone',
-        'customer.address as customerAddress',
-        'customer.location as customerLocation'
+        'orders.*',
+        'customers.name as customerName',
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress',
+        'customers.location as customerLocation'
       )
-      .join('customer', 'order.customerId', 'customer.id')
-      .orderBy('order.orderDate', 'desc');
+      .join('customers', 'orders.customerId', 'customers.id')
+      .orderBy('orders.orderDate', 'desc');
     
     res.json(orders);
   } catch (error) {
@@ -42,18 +42,18 @@ router.get('/', async (req, res) => {
 router.get('/daily/:date', async (req, res) => {
   try {
     const { date } = req.params;
-    const orders = await db('order')
+    const orders = await db('orders')
       .select(
-        'order.*',
-        'customer.name as customerName',
-        'customer.phone as customerPhone',
-        'customer.address as customerAddress',
-        'customer.location as customerLocation'
+        'orders.*',
+        'customers.name as customerName',
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress',
+        'customers.location as customerLocation'
       )
-      .join('customer', 'order.customerId', 'customer.id')
-      .where('order.orderDate', date)
-      .orderBy('order.deliveryTime')
-      .orderBy('customer.name');
+      .join('customers', 'orders.customerId', 'customers.id')
+      .where('orders.orderDate', date)
+      .orderBy('orders.deliveryTime')
+      .orderBy('customers.name');
     
     res.json(orders);
   } catch (error) {
@@ -66,16 +66,16 @@ router.get('/daily/:date', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await db('order')
+    const order = await db('orders')
       .select(
-        'order.*',
-        'customer.name as customerName',
-        'customer.phone as customerPhone',
-        'customer.address as customerAddress',
-        'customer.location as customerLocation'
+        'orders.*',
+        'customers.name as customerName',
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress',
+        'customers.location as customerLocation'
       )
-      .join('customer', 'order.customerId', 'customer.id')
-      .where('order.id', id)
+      .join('customers', 'orders.customerId', 'customers.id')
+      .where('orders.id', id)
       .first();
     
     if (!order) {
@@ -95,26 +95,26 @@ router.post('/', async (req, res) => {
     const validatedData = orderSchema.parse(req.body);
     
     // Müşterinin var olup olmadığını kontrol et
-    const customer = await db('customer').where('id', validatedData.customerId).first();
+    const customer = await db('customers').where('id', validatedData.customerId).first();
     if (!customer) {
       return res.status(400).json({ error: 'Geçersiz müşteri ID\'si' });
     }
     
-    const [newOrder] = await db('order')
+    const [newOrder] = await db('orders')
       .insert(validatedData)
       .returning('*');
     
     // Müşteri bilgileriyle birlikte döndür
-    const orderWithCustomer = await db('order')
+    const orderWithCustomer = await db('orders')
       .select(
-        'order.*',
-        'customer.name as customerName',
-        'customer.phone as customerPhone',
-        'customer.address as customerAddress',
-        'customer.location as customerLocation'
+        'orders.*',
+        'customers.name as customerName',
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress',
+        'customers.location as customerLocation'
       )
-      .join('customer', 'order.customerId', 'customer.id')
-      .where('order.id', newOrder.id)
+      .join('customers', 'orders.customerId', 'customers.id')
+      .where('orders.id', newOrder.id)
       .first();
     
     res.status(201).json(orderWithCustomer);
@@ -134,35 +134,35 @@ router.put('/:id', async (req, res) => {
     const validatedData = orderUpdateSchema.parse(req.body);
     
     // Siparişin var olup olmadığını kontrol et
-    const existingOrder = await db('order').where('id', id).first();
+    const existingOrder = await db('orders').where('id', id).first();
     if (!existingOrder) {
       return res.status(404).json({ error: 'Sipariş bulunamadı' });
     }
     
     // Müşteri ID değişiyorsa geçerliliğini kontrol et
     if (validatedData.customerId) {
-      const customer = await db('customer').where('id', validatedData.customerId).first();
+      const customer = await db('customers').where('id', validatedData.customerId).first();
       if (!customer) {
         return res.status(400).json({ error: 'Geçersiz müşteri ID\'si' });
       }
     }
     
-    const [updatedOrder] = await db('order')
+    const [updatedOrder] = await db('orders')
       .where('id', id)
       .update(validatedData)
       .returning('*');
     
     // Müşteri bilgileriyle birlikte döndür
-    const orderWithCustomer = await db('order')
+    const orderWithCustomer = await db('orders')
       .select(
-        'order.*',
-        'customer.name as customerName',
-        'customer.phone as customerPhone',
-        'customer.address as customerAddress',
-        'customer.location as customerLocation'
+        'orders.*',
+        'customers.name as customerName',
+        'customers.phone as customerPhone',
+        'customers.address as customerAddress',
+        'customers.location as customerLocation'
       )
-      .join('customer', 'order.customerId', 'customer.id')
-      .where('order.id', updatedOrder.id)
+      .join('customers', 'orders.customerId', 'customers.id')
+      .where('orders.id', updatedOrder.id)
       .first();
     
     res.json(orderWithCustomer);
@@ -181,12 +181,12 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     
     // Siparişin var olup olmadığını kontrol et
-    const existingOrder = await db('order').where('id', id).first();
+    const existingOrder = await db('orders').where('id', id).first();
     if (!existingOrder) {
       return res.status(404).json({ error: 'Sipariş bulunamadı' });
     }
     
-    await db('order').where('id', id).del();
+    await db('orders').where('id', id).del();
     
     res.json({ message: 'Sipariş başarıyla silindi' });
   } catch (error) {

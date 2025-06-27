@@ -17,7 +17,7 @@ const customerUpdateSchema = customerSchema.partial();
 // Tüm müşterileri getir
 router.get('/', async (req, res) => {
   try {
-    const customers = await db('customer').select('*').orderBy('name');
+    const customers = await db('customers').select('*').orderBy('name');
     res.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const customer = await db('customer').where('id', id).first();
+    const customer = await db('customers').where('id', id).first();
     
     if (!customer) {
       return res.status(404).json({ error: 'Müşteri bulunamadı' });
@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
     const validatedData = customerSchema.parse(req.body);
     
     // Telefon numarası benzersizliğini kontrol et
-    const existingCustomer = await db('customer')
+    const existingCustomer = await db('customers')
       .where('phone', validatedData.phone)
       .first();
     
@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Bu telefon numarası zaten kayıtlı' });
     }
     
-    const [newCustomer] = await db('customer')
+    const [newCustomer] = await db('customers')
       .insert(validatedData)
       .returning('*');
     
@@ -89,14 +89,14 @@ router.put('/:id', async (req, res) => {
     }
     
     // Müşterinin var olup olmadığını kontrol et
-    const existingCustomer = await db('customer').where('id', id).first();
+    const existingCustomer = await db('customers').where('id', id).first();
     if (!existingCustomer) {
       return res.status(404).json({ error: 'Müşteri bulunamadı' });
     }
     
     // Telefon numarası değişiyorsa benzersizlik kontrolü yap
     if (updateData.phone && updateData.phone !== existingCustomer.phone) {
-      const phoneExists = await db('customer')
+      const phoneExists = await db('customers')
         .where('phone', updateData.phone)
         .whereNot('id', id)
         .first();
@@ -106,7 +106,7 @@ router.put('/:id', async (req, res) => {
       }
     }
     
-    const [updatedCustomer] = await db('customer')
+    const [updatedCustomer] = await db('customers')
       .where('id', id)
       .update(updateData)
       .returning('*');
@@ -127,13 +127,13 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     
     // Müşterinin var olup olmadığını kontrol et
-    const existingCustomer = await db('customer').where('id', id).first();
+    const existingCustomer = await db('customers').where('id', id).first();
     if (!existingCustomer) {
       return res.status(404).json({ error: 'Müşteri bulunamadı' });
     }
     
     // Müşteri ve ilgili siparişleri sil (CASCADE ile otomatik)
-    await db('customer').where('id', id).del();
+    await db('customers').where('id', id).del();
     
     res.json({ message: 'Müşteri başarıyla silindi' });
   } catch (error) {
@@ -148,13 +148,13 @@ router.get('/:id/analytics', async (req, res) => {
     const { id } = req.params;
     
     // Müşterinin var olup olmadığını kontrol et
-    const customer = await db('customer').where('id', id).first();
+    const customer = await db('customers').where('id', id).first();
     if (!customer) {
       return res.status(404).json({ error: 'Müşteri bulunamadı' });
     }
     
     // Müşterinin siparişlerini getir
-    const orders = await db('order')
+    const orders = await db('orders')
       .where('customerId', id)
       .orderBy('orderDate', 'desc');
     
