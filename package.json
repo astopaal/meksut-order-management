@@ -9,8 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "nodemon --exec tsx server/index.ts",
-    "migrate": "knex migrate:latest --knexfile server/db/db.ts",
-    "migrate:rollback": "knex migrate:rollback --knexfile server/db/db.ts",
+    "migrate": "tsx server/db/init.ts",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "start:legacy": "npm run server & npm run dev",
     "start:simple": "npm run server"
