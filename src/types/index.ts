@@ -3,6 +3,7 @@ export interface Customer {
   name: string;
   phone: string;
   address?: string;
+  location?: string; // Koordinat bilgisi (lat,lon formatında)
   created_at?: string;
   updated_at?: string;
 }
@@ -24,6 +25,7 @@ export interface OrderWithCustomer extends Order {
   customerName: string;
   customerPhone: string;
   customerAddress?: string;
+  customerLocation?: string; // Koordinat bilgisi (lat,lon formatında)
 }
 
 export interface CustomerFormData {
@@ -119,11 +121,25 @@ export interface ChangelogEntry {
   id: string;
   title: string;
   description: string;
-  date: string;
-  version: string;
+  date?: string;
 }
 
 export interface ChangelogModalState {
   isOpen: boolean;
   showAgain: boolean;
+}
+
+// Müşteri Analitik Tipleri
+export interface CustomerAnalytics {
+  totalOrders: number;
+  totalQuantity: number;
+  firstOrderDate: string | null;
+  lastOrderDate: string | null;
+  daysSinceLastOrder: number | null;
+  avgDaysBetweenOrders: number | null;
+  morningOrders: number;
+  eveningOrders: number;
+  deliveredOrders: number;
+  pendingOrders: number;
+  cancelledOrders: number;
 }

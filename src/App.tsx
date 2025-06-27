@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import CustomerList from './features/customers/CustomerList';
 import CustomerForm from './features/customers/CustomerForm';
+import CustomerDetail from './features/customers/CustomerDetail';
 import OrderList from './features/orders/OrderList';
 import OrderForm from './features/orders/OrderForm';
 import Dashboard from './features/dashboard/Dashboard';
@@ -173,15 +174,15 @@ const CustomersPage: React.FC = () => {
               <p className="text-gray-600">Müşterilerinizi ekleyin, düzenleyin ve yönetin</p>
             </div>
             {!showForm && (
-              <button
-                onClick={() => setShowForm(true)}
+              <Link
+                to="/customers/new"
                 className="mt-4 sm:mt-0 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Yeni Müşteri Ekle
-              </button>
+              </Link>
             )}
           </div>
         </div>
@@ -263,15 +264,15 @@ const OrdersPage: React.FC = () => {
               <p className="text-gray-600">Günlük süt siparişlerini yönetin ve takip edin</p>
             </div>
             {!showForm && (
-              <button
-                onClick={() => setShowForm(true)}
+              <Link
+                to="/orders/new"
                 className="mt-4 sm:mt-0 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Yeni Sipariş Ekle
-              </button>
+              </Link>
             )}
           </div>
         </div>
@@ -328,6 +329,86 @@ const ReportsPage: React.FC = () => {
   );
 };
 
+const CustomerFormPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (data: CustomerFormData) => {
+    try {
+      setLoading(true);
+      await customerAPI.create(data);
+      navigate('/customers');
+    } catch (error) {
+      console.error('Error creating customer:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/customers');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Yeni Müşteri Ekle</h1>
+          <p className="text-gray-600">Yeni müşteri bilgilerini girin</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <CustomerForm
+            customer={null}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            loading={loading}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OrderFormPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (data: OrderFormData) => {
+    try {
+      setLoading(true);
+      await orderAPI.create(data);
+      navigate('/orders');
+    } catch (error) {
+      console.error('Error creating order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/orders');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Yeni Sipariş Ekle</h1>
+          <p className="text-gray-600">Yeni sipariş bilgilerini girin</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <OrderForm
+            order={null}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            loading={loading}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   return (
     <Router>
@@ -337,7 +418,10 @@ function App() {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/customers/new" element={<CustomerFormPage />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/orders/new" element={<OrderFormPage />} />
             <Route path="/reports" element={<ReportsPage />} />
           </Routes>
         </main>

@@ -12,7 +12,8 @@ import type {
   MonthlyTrend,
   InactiveCustomer,
   DeliveryTimeAnalysis,
-  DailyDistribution
+  DailyDistribution,
+  CustomerAnalytics
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -36,6 +37,11 @@ export const customerAPI = {
     return response.data;
   },
 
+  getAnalytics: async (id: number): Promise<{ customer: Customer; analytics: CustomerAnalytics }> => {
+    const response = await api.get(`/customers/${id}/analytics`);
+    return response.data;
+  },
+
   create: async (data: CustomerFormData): Promise<Customer> => {
     const response = await api.post('/customers', data);
     return response.data;
@@ -43,6 +49,11 @@ export const customerAPI = {
 
   update: async (id: number, data: Partial<CustomerFormData>): Promise<Customer> => {
     const response = await api.put(`/customers/${id}`, data);
+    return response.data;
+  },
+
+  updateLocation: async (id: number, location: string): Promise<Customer> => {
+    const response = await api.put(`/customers/${id}`, { location });
     return response.data;
   },
 

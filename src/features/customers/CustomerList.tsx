@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import type { Customer } from "../../types";
+import type { Customer, CustomerFormData } from "../../types";
 import { customerAPI } from "../../services/api";
+import Pagination from "../../components/Pagination";
+import { Link } from 'react-router-dom';
+import { LocationService } from "../../services/location";
 
 interface CustomerListProps {
   onEdit: (customer: Customer) => void;
@@ -11,6 +14,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadCustomers();
@@ -35,11 +42,41 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
       try {
         await customerAPI.delete(id);
         setCustomers(customers.filter((customer) => customer.id !== id));
+        // Eğer son sayfada tek kayıt kaldıysa ve silindiyse, önceki sayfaya git
+        const totalPages = Math.ceil((customers.length - 1) / itemsPerPage);
+        if (currentPage > totalPages && totalPages > 0) {
+          setCurrentPage(totalPages);
+        }
       } catch (err) {
         setError("Müşteri silinirken hata oluştu");
         console.error("Error deleting customer:", err);
       }
     }
+  };
+
+  // Pagination hesaplamaları
+  const totalPages = Math.ceil(customers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCustomers = customers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getMapsUrl = (customer: Customer): string | undefined => {
+    if (customer.location) {
+      const coords = LocationService.parseLocation(customer.location);
+      if (coords) {
+        return LocationService.getMapsUrl(coords.latitude, coords.longitude);
+      }
+    }
+    
+    if (customer.address) {
+      return `https://maps.apple.com/?q=${encodeURIComponent(customer.address + ' Altınordu Ordu')}`;
+    }
+    
+    return undefined;
   };
 
   if (loading) {
@@ -122,60 +159,102 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   }
 
   return (
-    <div className="overflow-x-auto w-full">
+    <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       {/* Table View */}
-<div className="mx-auto w-full">
-  <div className="w-full overflow-x-auto">
-    <table className="min-w-full table-auto divide-y divide-gray-200">
-      <thead className="bg-gray-50">
-        <tr>
-          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adres</th>
-          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
-        {customers.map((customer) => (
-          <tr key={customer.id}>
-            <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap">{customer.name}</td>
-            <td className="px-4 py-4 text-sm text-gray-600 whitespace-nowrap">{customer.phone}</td>
-            <td className="px-4 py-4 text-sm text-gray-900 break-words max-w-[200px]">
-              {customer.address}
-              {customer.address && (
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${customer.address} Altınordu Ordu`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-blue-500 underline text-xs mt-1"
-                >
-                  Haritada Göster
-                </a>
-              )}
-            </td>
-            <td className="px-4 py-4 text-right text-sm whitespace-nowrap">
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => onEdit(customer)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm text-blue-700 bg-blue-50 rounded hover:bg-blue-100"
-                >
-                  Düzenle
-                </button>
-                <button
-                  onClick={() => handleDelete(customer.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm text-red-700 bg-red-50 rounded hover:bg-red-100"
-                >
-                  Sil
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adres</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentCustomers.map((customer) => (
+              <tr key={customer.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-sm font-medium text-blue-600">
+                          {customer.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        <Link 
+                          to={`/customers/${customer.id}`}
+                          className="hover:text-blue-600 transition-colors duration-200"
+                        >
+                          {customer.name}
+                        </Link>
+                      </div>
+                      <div className="text-sm text-gray-500">{customer.phone}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {customer.address || 'Adres girilmemiş'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {customer.location ? (
+                    <a
+                      href={getMapsUrl(customer)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors duration-200"
+                    >
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Haritada Göster
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      Konum yok
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center justify-end space-x-2">
+                    <button
+                      onClick={() => onEdit(customer)}
+                      className="text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDelete(customer.id)}
+                      className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                    >
+                      Sil
+                    </button>
+                    <Link
+                      to={`/customers/${customer.id}`}
+                      className="text-green-600 hover:text-green-900 transition-colors duration-200"
+                    >
+                      Detay
+                    </Link>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={customers.length}
+        itemsPerPage={itemsPerPage}
+      />
     </div>
   );
 };
