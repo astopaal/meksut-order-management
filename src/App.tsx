@@ -48,6 +48,10 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    setTimeout(() => setShow(true), 100);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,25 +63,42 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-xs space-y-6">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Giriş Yap</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-green-100 transition-all duration-700">
+      <form
+        onSubmit={handleSubmit}
+        className={`bg-white p-8 rounded-2xl shadow-2xl w-full max-w-xs space-y-6 transform transition-all duration-700 ${show ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}
+        style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)' }}
+      >
+        <div className="flex flex-col items-center mb-2">
+          <div className="mb-2">
+            <img src="/logo.png" alt="Meksüt Logo" className="h-20 w-20 rounded-full shadow-lg object-cover mx-auto" />
+          </div>
+          <h2 className="text-lg font-bold text-center text-gray-800 tracking-tight leading-snug mb-1">
+            MEKSÜT Yönetim Paneli
+          </h2>
+          <div className="text-sm text-gray-500 font-medium">Giriş Yap</div>
+        </div>
         <input
           type="text"
           placeholder="Kullanıcı Adı"
           value={username}
           onChange={e => setUsername(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 text-base shadow-sm hover:shadow-md"
         />
         <input
           type="password"
           placeholder="Şifre"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 text-base shadow-sm hover:shadow-md"
         />
-        {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Giriş Yap</button>
+        {error && <div className="text-red-600 text-sm text-center animate-pulse">{error}</div>}
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-blue-500 to-green-400 text-white py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-green-500 shadow-lg transition-all duration-200 text-base tracking-wide"
+        >
+          Giriş Yap
+        </button>
       </form>
     </div>
   );
@@ -415,13 +436,9 @@ const Navigation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <span className="text-lg">🥛</span>
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">MEKSÜT</h1>
-              </div>
+            <div className="flex-shrink-0 flex items-center space-x-3">
+              <img src="/logo.png" alt="Meksüt Logo" className="h-10 w-10 rounded-full shadow object-cover" />
+              <h1 className="text-xl font-bold text-gray-900">MEKSÜT</h1>
             </div>
           </div>
           
