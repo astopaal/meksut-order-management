@@ -395,6 +395,21 @@ const Navigation: React.FC = () => {
     { path: '/reports', label: 'Raporlar', icon: '📈' },
   ];
 
+  // Menü dışına tıklayınca kapat fonksiyonu
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const menu = document.getElementById('mobile-menu-panel');
+      if (menu && !menu.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isMenuOpen]);
+
+  if (!isLoggedIn) return null;
+
   return (
     <nav className="bg-white shadow-sm mb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -456,34 +471,56 @@ const Navigation: React.FC = () => {
               </svg>
             </button>
           </div>
-          {isLoggedIn && (
+          {/* Masaüstü çıkış butonu */}
+          <div className="hidden md:inline-flex items-center ml-4">
             <button
               onClick={logout}
-              className="ml-4 px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-sm font-semibold"
+              className="px-4 py-2 rounded-full bg-red-50 text-red-700 font-semibold text-sm shadow hover:bg-red-100 border border-red-200 transition"
             >
               Çıkış
             </button>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile menu with animation */}
+      {/* Mobile menu with improved design and animation */}
       <div
-        className={`md:hidden fixed inset-0 z-40 transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-full pointer-events-none'}`}
-        style={{ background: isMenuOpen ? 'rgba(0,0,0,0.15)' : 'transparent' }}
+        className={`md:hidden fixed inset-0 z-40 transition-all duration-300 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: isMenuOpen ? 'rgba(0,0,0,0.25)' : 'transparent' }}
       >
-        <div className={`absolute top-0 right-0 w-64 h-full bg-blue-700 shadow-lg transition-all duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div
+          id="mobile-menu-panel"
+          className={`absolute top-0 right-0 w-72 max-w-full h-full bg-white shadow-2xl transition-all duration-300 flex flex-col ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          {/* Üstte logo ve kapat butonu */}
+          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                <span className="text-lg">🥛</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">MEKSÜT</h1>
+            </div>
+            <button
+              onClick={closeMenu}
+              className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+              aria-label="Kapat"
+            >
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div className="flex flex-col h-full">
-            <div className="px-2 pt-2 pb-3 space-y-1 flex-1">
+            <div className="px-4 pt-6 pb-3 space-y-3 flex-1">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={closeMenu}
-                  className={`block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                  className={`block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'bg-white bg-opacity-20 text-white shadow-md'
-                      : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
                   }`}
                 >
                   <span className="mr-3">{item.icon}</span>
@@ -531,7 +568,7 @@ const AppRouter: React.FC = () => (
 const App: React.FC = () => (
   <AuthProvider>
     <Router>
-      {React.useContext(AuthContext).isLoggedIn && <Navigation />}
+      <Navigation />
       <AppRouter />
     </Router>
   </AuthProvider>
