@@ -196,8 +196,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       {/* Arama kutusu */}
-      <div className="mb-6 flex justify-end">
-        <div className="relative w-full max-w-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <div></div>
+        <div className="relative w-full sm:w-auto sm:min-w-[320px] max-w-xs ml-auto">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
@@ -211,12 +212,13 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 shadow-sm focus:shadow-lg transition-all duration-200 text-base"
+            className="block w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 shadow-sm focus:shadow-lg transition-all duration-200 text-base"
+            style={{ minHeight: 44 }}
           />
         </div>
       </div>
-      {/* Table View */}
-      <div className="overflow-x-auto">
+      {/* Table View - Masaüstü */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -310,19 +312,19 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
                     </a>
                     <button
                       onClick={() => onEdit(customer)}
-                      className="text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-blue-200 transition-colors"
                     >
                       Düzenle
                     </button>
                     <button
                       onClick={() => handleDelete(customer.id)}
-                      className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                      className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-200 transition-colors"
                     >
                       Sil
                     </button>
                     <Link
                       to={`/customers/${customer.id}`}
-                      className="text-green-600 hover:text-green-900 transition-colors duration-200"
+                      className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-200 transition-colors"
                     >
                       Detay
                     </Link>
@@ -332,6 +334,84 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobil Kart Görünümü */}
+      <div className="md:hidden space-y-3">
+        {currentCustomers.map((customer) => (
+          <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col gap-2">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-sm font-medium text-blue-600">
+                  {customer.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <div className="text-base font-semibold text-gray-900">{customer.name}</div>
+                <div className="text-xs text-gray-500">{customer.phone}</div>
+              </div>
+            </div>
+            <div className="text-sm text-gray-700">
+              <span className="font-medium">Adres: </span>
+              {customer.address && customer.address.trim() !== '' ? (
+                <span>
+                  {customer.address}
+                  {customer.district ? `, ${customer.district}` : ''}
+                  {customer.city ? `, ${customer.city}` : ''}
+                </span>
+              ) : (
+                <span className="text-gray-400">Adres girilmemiş</span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Son Sipariş: {customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString('tr-TR') : '-'}
+              </span>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                {customer.isActive ? 'Aktif' : 'Pasif'}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Toplam Sipariş: {customer.totalOrders ?? 0}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <a
+                href={`tel:${customer.phone}`}
+                className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-semibold"
+                title="Ara"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                Ara
+              </a>
+              <a
+                href={`sms:${customer.phone}`}
+                className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 hover:bg-green-200 text-xs font-semibold"
+                title="Mesaj Gönder"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8a9 9 0 1118 0z" /></svg>
+                Mesaj
+              </a>
+              <button
+                onClick={() => onEdit(customer)}
+                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-blue-200 transition-colors"
+              >
+                Düzenle
+              </button>
+              <button
+                onClick={() => handleDelete(customer.id)}
+                className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-200 transition-colors"
+              >
+                Sil
+              </button>
+              <Link
+                to={`/customers/${customer.id}`}
+                className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-200 transition-colors"
+              >
+                Detay
+              </Link>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Pagination */}

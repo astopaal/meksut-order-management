@@ -14,10 +14,18 @@ const customerSchema = z.object({
 
 const customerUpdateSchema = customerSchema.partial();
 
-// Tüm müşterileri getir
+// Tüm müşterileri getir (toplam sipariş ve son sipariş tarihi ile)
 router.get('/', async (req, res) => {
   try {
-    const customers = await db('customers').select('*').orderBy('name');
+    const customers = await db('customers')
+      .leftJoin('orders', 'customers.id', 'orders.customerId')
+      .select(
+        'customers.*',
+        db.raw('COUNT(orders.id) as totalOrders'),
+        db.raw('MAX(orders.orderDate) as lastOrderDate')
+      )
+      .groupBy('customers.id')
+      .orderBy('customers.name');
     res.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);
