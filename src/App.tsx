@@ -467,24 +467,39 @@ const Navigation: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden bg-blue-700`}>
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={closeMenu}
-              className={`block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
-                isActive(item.path)
-                  ? 'bg-white bg-opacity-20 text-white shadow-md'
-                  : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
-              }`}
-            >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+      {/* Mobile menu with animation */}
+      <div
+        className={`md:hidden fixed inset-0 z-40 transition-all duration-300 ${isMenuOpen ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-full pointer-events-none'}`}
+        style={{ background: isMenuOpen ? 'rgba(0,0,0,0.15)' : 'transparent' }}
+      >
+        <div className={`absolute top-0 right-0 w-64 h-full bg-blue-700 shadow-lg transition-all duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col h-full">
+            <div className="px-2 pt-2 pb-3 space-y-1 flex-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={closeMenu}
+                  className={`block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                    isActive(item.path)
+                      ? 'bg-white bg-opacity-20 text-white shadow-md'
+                      : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                  }`}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="p-4">
+              <button
+                onClick={logout}
+                className="w-full px-4 py-3 rounded-full bg-red-600 text-white font-bold text-base shadow hover:bg-red-700 transition"
+              >
+                Çıkış
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -516,7 +531,7 @@ const AppRouter: React.FC = () => (
 const App: React.FC = () => (
   <AuthProvider>
     <Router>
-      <Navigation />
+      {React.useContext(AuthContext).isLoggedIn && <Navigation />}
       <AppRouter />
     </Router>
   </AuthProvider>
