@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import CustomerList from './features/customers/CustomerList';
 import CustomerForm from './features/customers/CustomerForm';
 import CustomerDetail from './features/customers/CustomerDetail';
@@ -10,114 +10,76 @@ import Reports from './features/reports/Reports';
 import type { Customer, OrderWithCustomer, CustomerFormData, OrderFormData } from './types';
 import { customerAPI, orderAPI } from './services/api';
 
-const Navigation: React.FC = () => {
+// Basit Auth Context
+const AuthContext = React.createContext<{ isLoggedIn: boolean; login: (u: string, p: string) => boolean; logout: () => void }>({ isLoggedIn: false, login: () => false, logout: () => {} });
+
+const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
+
+  const login = (username: string, password: string) => {
+    if (username === 'coban52' && password === '123456yy11q') {
+      setIsLoggedIn(true);
+      localStorage.setItem('isLoggedIn', 'true');
+      return true;
+    }
+    return false;
+  };
+  const logout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('isLoggedIn');
+  };
+  return <AuthContext.Provider value={{ isLoggedIn, login, logout }}>{children}</AuthContext.Provider>;
+};
+
+// Protected Route
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoggedIn } = React.useContext(AuthContext);
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  if (!isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <>{children}</>;
+};
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+// Login Page
+const LoginPage: React.FC = () => {
+  const { login } = React.useContext(AuthContext);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const closeMenu = () => {
-    setIsMenuOpen(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (login(username, password)) {
+      navigate('/');
+    } else {
+      setError('Kullanıcı adı veya şifre hatalı');
+    }
   };
-
-  const navItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/customers', label: 'Müşteriler', icon: '👥' },
-    { path: '/orders', label: 'Siparişler', icon: '📦' },
-    { path: '/reports', label: 'Raporlar', icon: '📈' },
-  ];
 
   return (
-    <nav className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                  <span className="text-lg">🥛</span>
-                </div>
-                <h1 className="text-xl font-bold text-white">MEKSÜT</h1>
-              </div>
-            </div>
-          </div>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive(item.path)
-                    ? 'bg-white bg-opacity-20 text-white shadow-md'
-                    : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
-                }`}
-              >
-                <span className="mr-2">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-lg text-blue-100 hover:text-white hover:bg-white hover:bg-opacity-10 transition-all duration-200"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Ana menüyü aç</span>
-              <svg
-                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <svg
-                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden bg-blue-700`}>
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={closeMenu}
-              className={`block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
-                isActive(item.path)
-                  ? 'bg-white bg-opacity-20 text-white shadow-md'
-                  : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
-              }`}
-            >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </nav>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-xs space-y-6">
+        <h2 className="text-2xl font-bold text-center text-gray-800">Giriş Yap</h2>
+        <input
+          type="text"
+          placeholder="Kullanıcı Adı"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="password"
+          placeholder="Şifre"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        {error && <div className="text-red-600 text-sm text-center">{error}</div>}
+        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Giriş Yap</button>
+      </form>
+    </div>
   );
 };
 
@@ -409,12 +371,133 @@ const OrderFormPage: React.FC = () => {
   );
 };
 
-function App() {
+const Navigation: React.FC = () => {
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isLoggedIn, logout } = React.useContext(AuthContext);
+  
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const navItems = [
+    { path: '/', label: 'Dashboard', icon: '📊' },
+    { path: '/customers', label: 'Müşteriler', icon: '👥' },
+    { path: '/orders', label: 'Siparişler', icon: '📦' },
+    { path: '/reports', label: 'Raporlar', icon: '📈' },
+  ];
+
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <main>
+    <nav className="bg-white shadow-sm mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                  <span className="text-lg">🥛</span>
+                </div>
+                <h1 className="text-xl font-bold text-gray-900">MEKSÜT</h1>
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(item.path)
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <span className="mr-2">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+              aria-expanded="false"
+            >
+              <span className="sr-only">Ana menüyü aç</span>
+              <svg
+                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg
+                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          {isLoggedIn && (
+            <button
+              onClick={logout}
+              className="ml-4 px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 text-sm font-semibold"
+            >
+              Çıkış
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden bg-blue-700`}>
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={closeMenu}
+              className={`block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                isActive(item.path)
+                  ? 'bg-white bg-opacity-20 text-white shadow-md'
+                  : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white'
+              }`}
+            >
+              <span className="mr-3">{item.icon}</span>
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+const AppRouter: React.FC = () => (
+  <Routes>
+    <Route path="/login" element={<LoginPage />} />
+    <Route
+      path="/*"
+      element={
+        <ProtectedRoute>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/customers" element={<CustomersPage />} />
@@ -424,10 +507,19 @@ function App() {
             <Route path="/orders/new" element={<OrderFormPage />} />
             <Route path="/reports" element={<ReportsPage />} />
           </Routes>
-        </main>
-      </div>
+        </ProtectedRoute>
+      }
+    />
+  </Routes>
+);
+
+const App: React.FC = () => (
+  <AuthProvider>
+    <Router>
+      <Navigation />
+      <AppRouter />
     </Router>
-  );
-}
+  </AuthProvider>
+);
 
 export default App;

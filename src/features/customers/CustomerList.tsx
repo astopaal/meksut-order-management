@@ -196,7 +196,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       {/* Arama kutusu */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2 pt-4 pr-2">
         <div></div>
         <div className="relative w-full sm:w-auto sm:min-w-[320px] max-w-xs ml-auto">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -235,7 +235,6 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none" onClick={() => handleSort('totalOrders')}>
                 Toplam Sipariş {sortField === 'totalOrders' && (sortDirection === 'asc' ? '▲' : '▼')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
             </tr>
           </thead>
@@ -280,17 +279,6 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {customer.totalOrders ?? 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {customer.isActive ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Aktif
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Pasif
-                    </span>
-                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-2">
