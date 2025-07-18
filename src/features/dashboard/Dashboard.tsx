@@ -137,22 +137,7 @@ const Dashboard: React.FC = () => {
       if (!confirmDelivery) return;
 
       await orderAPI.updateStatus(orderId, 'delivered');
-      setTodayOrders(orders => orders.map(o => o.id === orderId ? { ...o, status: 'delivered' } : o));
-
-      const confirmLocationUpdate = window.confirm('Müşteri konumunu mevcut konumunuz ile güncellemek ister misiniz?');
-      if (!confirmLocationUpdate) return;
-
-      try {
-        const coords = await LocationService.getCurrentLocation();
-        const locationString = LocationService.formatLocation(coords.latitude, coords.longitude);
-        
-        await customerAPI.updateLocation(customerId, locationString);
-        
-        alert('Müşteri konumu başarıyla güncellendi!');
-      } catch (locationError) {
-        console.error('Konum alma hatası:', locationError);
-        alert('Konum alınamadı. Müşteri konumu güncellenmedi.');
-      }
+      setTodayOrders((orders: OrderWithCustomer[]) => orders.map((o: OrderWithCustomer) => o.id === orderId ? { ...o, status: 'delivered' } : o));
     } catch (err) {
       alert('Teslim etme işlemi başarısız!');
       console.error('Error delivering order:', err);

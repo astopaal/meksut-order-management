@@ -14,8 +14,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Pagination state
+  const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -54,11 +53,16 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
     }
   };
 
+  // Arama filtresi
+  const filteredCustomers = customers.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.phone.includes(search)
+  );
   // Pagination hesaplamaları
-  const totalPages = Math.ceil(customers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCustomers = customers.slice(startIndex, endIndex);
+  const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -160,6 +164,19 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
 
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      {/* Arama kutusu */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="İsim veya telefon ara..."
+          value={search}
+          onChange={e => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       {/* Table View */}
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto divide-y divide-gray-200">
@@ -252,7 +269,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        totalItems={customers.length}
+        totalItems={filteredCustomers.length}
         itemsPerPage={itemsPerPage}
       />
     </div>
