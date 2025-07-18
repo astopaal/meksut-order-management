@@ -22,32 +22,27 @@ const Dashboard: React.FC = () => {
   const changelogEntries: ChangelogEntry[] = [
     {
       id: '1',
-      title: 'Müşteri Detay Sayfası',
-      description: 'Her müşteri için detaylı analitik sayfası eklendi. Toplam sipariş, ortalama sipariş aralığı, aktiflik durumu ve daha fazlası.'
+      title: 'Müşterilerde Sayfası Güncellendi',
+      description: 'Müşterilerde arama yapılabilir hale getirildi.'
     },
     {
       id: '2',
-      title: 'Apple Maps Entegrasyonu',
-      description: 'Google Maps yerine Apple Maps kullanılmaya başlandı. Daha hızlı ve güvenilir harita deneyimi.'
+      title: 'Sıralama Özelliği',
+      description: 'Müşteri listesinde isim, telefon, son sipariş tarihi ve toplam sipariş sayısına göre sıralama eklendi.'
     },
     {
       id: '3',
-      title: 'Akıllı Konum Sistemi',
-      description: 'Müşteri konumu varsa direkt koordinatlara, yoksa adrese yönlendirme yapılıyor. Daha doğru navigasyon.'
+      title: 'Hızlı Eylemler',
+      description: 'Her müşteri satırında Ara ve Mesaj Gönder butonları eklendi.'
     },
     {
       id: '4',
-      title: 'Pagination Sistemi',
-      description: 'Müşteri ve sipariş listelerine sayfalama eklendi. Büyük veri setlerinde daha hızlı yükleme.'
-    },
-    {
-      id: '5',
-      title: 'Müşteri Aktiflik Analizi',
-      description: 'Müşterilerin son sipariş tarihlerine göre aktiflik durumu analizi. Yeşil, sarı, kırmızı renk kodları ile görsel gösterim.'
+      title: 'Son Sipariş ve Aktiflik',
+      description: 'Müşteri satırında son sipariş tarihi ve aktif/pasif durumu renkli olarak gösteriliyor.'
     },
   ];
 
-  const currentVersion = '1.3.0';
+  const currentVersion = '1.3.1';
 
   useEffect(() => {
     loadDashboardData();

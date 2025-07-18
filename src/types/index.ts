@@ -6,6 +6,11 @@ export interface Customer {
   location?: string; // Koordinat bilgisi (lat,lon formatında)
   created_at?: string;
   updated_at?: string;
+  district?: string | null;
+  city?: string | null;
+  lastOrderDate?: string | null;
+  totalOrders?: number;
+  isActive?: boolean;
 }
 
 export interface Order {

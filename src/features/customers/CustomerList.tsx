@@ -18,6 +18,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  // Sıralama state'i
+  const [sortField, setSortField] = useState<'name' | 'phone' | 'lastOrderDate' | 'totalOrders'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   useEffect(() => {
     loadCustomers();
   }, []);
@@ -59,10 +63,27 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
     c.phone.includes(search)
   );
   // Pagination hesaplamaları
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+    let aValue: any = a[sortField];
+    let bValue: any = b[sortField];
+    if (sortField === 'lastOrderDate') {
+      aValue = a.lastOrderDate ? new Date(a.lastOrderDate).getTime() : 0;
+      bValue = b.lastOrderDate ? new Date(b.lastOrderDate).getTime() : 0;
+    }
+    if (sortField === 'totalOrders') {
+      aValue = a.totalOrders || 0;
+      bValue = b.totalOrders || 0;
+    }
+    if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+    if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
+  const currentCustomers = sortedCustomers.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -81,6 +102,16 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
     }
     
     return undefined;
+  };
+
+  // Sıralama başlığı tıklama fonksiyonu
+  const handleSort = (field: 'name' | 'phone' | 'lastOrderDate' | 'totalOrders') => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
   };
 
   if (loading) {
@@ -165,27 +196,45 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       {/* Arama kutusu */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="İsim veya telefon ara..."
-          value={search}
-          onChange={e => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      <div className="mb-6 flex justify-end">
+        <div className="relative w-full max-w-xs">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            placeholder="İsim veya telefon ara..."
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 shadow-sm focus:shadow-lg transition-all duration-200 text-base"
+          />
+        </div>
       </div>
       {/* Table View */}
       <div className="overflow-x-auto">
-        <table className="min-w-full table-auto divide-y divide-gray-200">
+        <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adres</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none" onClick={() => handleSort('name')}>
+                İsim {sortField === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none" onClick={() => handleSort('phone')}>
+                Telefon {sortField === 'phone' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adres</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none" onClick={() => handleSort('lastOrderDate')}>
+                Son Sipariş {sortField === 'lastOrderDate' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer select-none" onClick={() => handleSort('totalOrders')}>
+                Toplam Sipariş {sortField === 'totalOrders' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -193,12 +242,10 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
               <tr key={customer.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600">
-                          {customer.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-sm font-medium text-blue-600">
+                        {customer.name.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
@@ -209,35 +256,58 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
                           {customer.name}
                         </Link>
                       </div>
-                      <div className="text-sm text-gray-500">{customer.phone}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {customer.address || 'Adres girilmemiş'}
+                  {customer.phone}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {customer.address && customer.address.trim() !== '' ? (
+                    <span>
+                      {customer.address}
+                      {customer.district ? `, ${customer.district}` : ''}
+                      {customer.city ? `, ${customer.city}` : ''}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">Adres girilmemiş</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString('tr-TR') : <span className="text-gray-400">-</span>}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {customer.totalOrders ?? 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {customer.location ? (
-                    <a
-                      href={getMapsUrl(customer)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors duration-200"
-                    >
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Haritada Göster
-                    </a>
+                  {customer.isActive ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Aktif
+                    </span>
                   ) : (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Konum yok
+                      Pasif
                     </span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-2">
+                    <a
+                      href={`tel:${customer.phone}`}
+                      className="inline-flex items-center px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold"
+                      title="Ara"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                      Ara
+                    </a>
+                    <a
+                      href={`sms:${customer.phone}`}
+                      className="inline-flex items-center px-2 py-1 rounded bg-green-50 text-green-700 hover:bg-green-100 text-xs font-semibold"
+                      title="Mesaj Gönder"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8a9 9 0 1118 0z" /></svg>
+                      Mesaj
+                    </a>
                     <button
                       onClick={() => onEdit(customer)}
                       className="text-blue-600 hover:text-blue-900 transition-colors duration-200"
@@ -269,7 +339,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        totalItems={filteredCustomers.length}
+        totalItems={sortedCustomers.length}
         itemsPerPage={itemsPerPage}
       />
     </div>
