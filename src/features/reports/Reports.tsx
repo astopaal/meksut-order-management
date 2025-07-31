@@ -215,44 +215,156 @@ const Reports: React.FC = () => {
 
       {/* Customers Tab */}
       {activeTab === 'customers' && (
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Müşteri Sipariş Analizi</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Müşteri</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teslim Edilen</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İlk Sipariş</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Sipariş</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ortalama Gün</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {customerAnalysis.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4">
+        <div className="space-y-6">
+          {/* Özet Kartları */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="card bg-blue-50 border-blue-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {customerAnalysis.length}
+                </div>
+                <div className="text-sm text-blue-700 font-medium">Toplam Müşteri</div>
+                <div className="text-xs text-blue-600">Analiz edilen</div>
+              </div>
+            </div>
+            <div className="card bg-green-50 border-green-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {customerAnalysis.reduce((sum, c) => sum + c.total_orders, 0)}
+                </div>
+                <div className="text-sm text-green-700 font-medium">Toplam Sipariş</div>
+                <div className="text-xs text-green-600">Tüm müşteriler</div>
+              </div>
+            </div>
+            <div className="card bg-yellow-50 border-yellow-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {customerAnalysis.reduce((sum, c) => sum + c.delivered_orders, 0)}
+                </div>
+                <div className="text-sm text-yellow-700 font-medium">Teslim Edilen</div>
+                <div className="text-xs text-yellow-600">Toplam teslimat</div>
+              </div>
+            </div>
+            <div className="card bg-purple-50 border-purple-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {Math.round(customerAnalysis.reduce((sum, c) => sum + (c.avg_days_between_orders || 0), 0) / customerAnalysis.filter(c => c.avg_days_between_orders).length)}
+                </div>
+                <div className="text-sm text-purple-700 font-medium">Ortalama Gün</div>
+                <div className="text-xs text-purple-600">Siparişler arası</div>
+              </div>
+            </div>
+          </div>
+
+          {/* En Aktif Müşteriler */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">En Aktif Müşteriler (Top 5)</h3>
+            <div className="space-y-3">
+              {customerAnalysis.slice(0, 5).map((customer, index) => {
+                const maxOrders = Math.max(...customerAnalysis.map(c => c.total_orders));
+                const percentage = maxOrders > 0 ? (customer.total_orders / maxOrders) * 100 : 0;
+                
+                return (
+                  <div key={customer.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        index === 0 ? 'bg-yellow-500' : 
+                        index === 1 ? 'bg-gray-400' : 
+                        index === 2 ? 'bg-orange-500' : 'bg-blue-500'
+                      }`}>
+                        {index + 1}
+                      </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                        <div className="font-medium text-gray-900">{customer.name}</div>
                         <div className="text-sm text-gray-500">{customer.phone}</div>
                       </div>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">{customer.total_orders}</td>
-                    <td className="px-4 py-4 text-sm text-gray-900">{customer.delivered_orders}</td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
-                      {customer.first_order_date ? formatDate(customer.first_order_date) : '-'}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
-                      {customer.last_order_date ? formatDate(customer.last_order_date) : '-'}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-900">
-                      {customer.avg_days_between_orders ? `${customer.avg_days_between_orders} gün` : '-'}
-                    </td>
+                    </div>
+                    <div className="flex-1 ml-4">
+                      <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">{customer.total_orders}</div>
+                      <div className="text-xs text-gray-500">sipariş</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Detaylı Tablo */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tüm Müşteri Analizi</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Müşteri</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teslim Edilen</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teslimat Oranı</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İlk Sipariş</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Sipariş</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ortalama Gün</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {customerAnalysis.map((customer) => {
+                    const deliveryRate = customer.total_orders > 0 ? Math.round((customer.delivered_orders / customer.total_orders) * 100) : 0;
+                    const getStatusColor = () => {
+                      if (customer.total_orders === 0) return 'text-gray-500 bg-gray-100';
+                      if (deliveryRate >= 90) return 'text-green-600 bg-green-100';
+                      if (deliveryRate >= 70) return 'text-yellow-600 bg-yellow-100';
+                      return 'text-red-600 bg-red-100';
+                    };
+                    const getStatusText = () => {
+                      if (customer.total_orders === 0) return 'Yeni';
+                      if (deliveryRate >= 90) return 'Mükemmel';
+                      if (deliveryRate >= 70) return 'İyi';
+                      return 'Düşük';
+                    };
+                    
+                    return (
+                      <tr key={customer.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                            <div className="text-sm text-gray-500">{customer.phone}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 font-medium">{customer.total_orders}</td>
+                        <td className="px-4 py-4 text-sm text-gray-900">{customer.delivered_orders}</td>
+                        <td className="px-4 py-4 text-sm">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
+                            %{deliveryRate}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {customer.first_order_date ? formatDate(customer.first_order_date) : '-'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {customer.last_order_date ? formatDate(customer.last_order_date) : '-'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {customer.avg_days_between_orders ? `${customer.avg_days_between_orders} gün` : '-'}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
+                            {getStatusText()}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -260,57 +372,183 @@ const Reports: React.FC = () => {
       {/* Trends Tab */}
       {activeTab === 'trends' && (
         <div className="space-y-6">
-          {/* Weekly Trend */}
-          <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Haftalık Sipariş Trendi (Son 8 Hafta)</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hafta</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sabah</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akşam</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {weeklyTrend.map((week, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 text-sm text-gray-900">{week.week}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{week.order_count}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{week.morning_orders}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{week.evening_orders}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Özet Kartları */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="card bg-blue-50 border-blue-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {weeklyTrend.reduce((sum, week) => sum + week.order_count, 0)}
+                </div>
+                <div className="text-sm text-blue-700 font-medium">Son 4 Hafta Toplam</div>
+                <div className="text-xs text-blue-600">Haftalık ortalama: {Math.round(weeklyTrend.reduce((sum, week) => sum + week.order_count, 0) / 4)}</div>
+              </div>
+            </div>
+            <div className="card bg-green-50 border-green-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {monthlyTrend.reduce((sum, month) => sum + month.order_count, 0)}
+                </div>
+                <div className="text-sm text-green-700 font-medium">Son 12 Ay Toplam</div>
+                <div className="text-xs text-green-600">Aylık ortalama: {Math.round(monthlyTrend.reduce((sum, month) => sum + month.order_count, 0) / 12)}</div>
+              </div>
+            </div>
+            <div className="card bg-yellow-50 border-yellow-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {weeklyTrend.reduce((sum, week) => sum + week.morning_orders, 0)}
+                </div>
+                <div className="text-sm text-yellow-700 font-medium">Sabah Siparişleri</div>
+                <div className="text-xs text-yellow-600">Son 4 hafta</div>
+              </div>
+            </div>
+            <div className="card bg-purple-50 border-purple-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {weeklyTrend.reduce((sum, week) => sum + week.evening_orders, 0)}
+                </div>
+                <div className="text-sm text-purple-700 font-medium">Akşam Siparişleri</div>
+                <div className="text-xs text-purple-600">Son 4 hafta</div>
+              </div>
             </div>
           </div>
 
-          {/* Monthly Trend */}
+          {/* Haftalık Trend Grafik */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Haftalık Sipariş Trendi (Son 4 Hafta)</h3>
+            <div className="space-y-4">
+              {weeklyTrend.map((week, index) => {
+                const total = week.order_count;
+                const morningPercent = total > 0 ? (week.morning_orders / total) * 100 : 0;
+                const eveningPercent = total > 0 ? (week.evening_orders / total) * 100 : 0;
+                const maxValue = Math.max(...weeklyTrend.map(w => w.order_count));
+                const barHeight = maxValue > 0 ? (total / maxValue) * 100 : 0;
+                
+                return (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-gray-700">{week.week}</span>
+                      <span className="text-gray-500">{total} sipariş</span>
+                    </div>
+                    <div className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
+                      <div 
+                        className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-purple-500 rounded-lg"
+                        style={{ width: `${barHeight}%` }}
+                      >
+                        <div className="flex h-full">
+                          <div 
+                            className="bg-yellow-400 h-full"
+                            style={{ width: `${morningPercent}%` }}
+                          ></div>
+                          <div 
+                            className="bg-purple-500 h-full"
+                            style={{ width: `${eveningPercent}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-between px-3 text-xs text-white font-medium">
+                        <span>{week.morning_orders} sabah</span>
+                        <span>{week.evening_orders} akşam</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex items-center justify-center space-x-4 text-xs">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-yellow-400 rounded"></div>
+                <span>Sabah Siparişleri</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                <span>Akşam Siparişleri</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Aylık Trend Grafik */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Aylık Sipariş Trendi (Son 12 Ay)</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ay</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sabah</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akşam</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {monthlyTrend.map((month, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 text-sm text-gray-900">{month.month}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{month.order_count}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{month.morning_orders}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{month.evening_orders}</td>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {monthlyTrend.map((month, index) => {
+                const total = month.order_count;
+                const maxValue = Math.max(...monthlyTrend.map(m => m.order_count));
+                const barHeight = maxValue > 0 ? (total / maxValue) * 100 : 0;
+                
+                return (
+                  <div key={index} className="text-center">
+                    <div className="text-xs text-gray-500 mb-2">{month.month}</div>
+                    <div className="relative h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-lg"
+                        style={{ height: `${barHeight}%` }}
+                      ></div>
+                      <div className="absolute inset-0 flex items-end justify-center pb-2">
+                        <span className="text-xs font-medium text-gray-700">{total}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-600">
+                      <div>Sabah: {month.morning_orders}</div>
+                      <div>Akşam: {month.evening_orders}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Detaylı Tablolar */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="card">
+              <h4 className="text-md font-semibold text-gray-900 mb-3">Haftalık Detaylar</h4>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hafta</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sabah</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Akşam</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {weeklyTrend.map((week, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 text-xs text-gray-900">{week.week}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900 font-medium">{week.order_count}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{week.morning_orders}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{week.evening_orders}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="card">
+              <h4 className="text-md font-semibold text-gray-900 mb-3">Aylık Detaylar</h4>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ay</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sabah</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Akşam</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {monthlyTrend.map((month, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 text-xs text-gray-900">{month.month}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900 font-medium">{month.order_count}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{month.morning_orders}</td>
+                        <td className="px-3 py-2 text-xs text-gray-900">{month.evening_orders}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -318,41 +556,122 @@ const Reports: React.FC = () => {
 
       {/* Inactive Customers Tab */}
       {activeTab === 'inactive' && (
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Pasif Müşteriler</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Müşteri</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Sipariş</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pasif Gün</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam Sipariş</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {inactiveCustomers.map((customer) => {
-                  const status = getInactiveStatus(customer.days_inactive);
-                  return (
-                    <tr key={customer.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                          <div className="text-sm text-gray-500">{customer.phone}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-900">
-                        {customer.last_order_date ? formatDate(customer.last_order_date) : 'Hiç sipariş vermemiş'}
-                      </td>
-                      <td className="px-4 py-4 text-sm">
-                        <span className={status.color}>{status.text}</span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{customer.total_orders}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <div className="space-y-6">
+          {/* Açıklama Kartı */}
+          <div className="card bg-blue-50 border-blue-200">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-blue-900 mb-2">Pasif Müşteri Kriterleri</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="text-red-700 font-medium">Kritik (14+ gün)</span>
+                    <span className="text-red-600">Acil aksiyon gerekli</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span className="text-yellow-700 font-medium">Uyarı (8-14 gün)</span>
+                    <span className="text-yellow-600">İletişim kurulmalı</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* İstatistik Kartları */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="card bg-red-50 border-red-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">
+                  {inactiveCustomers.filter(c => !c.days_inactive || c.days_inactive > 14).length}
+                </div>
+                <div className="text-sm text-red-700 font-medium">Kritik Durum</div>
+                <div className="text-xs text-red-600">14+ gün pasif</div>
+              </div>
+            </div>
+            <div className="card bg-yellow-50 border-yellow-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {inactiveCustomers.filter(c => c.days_inactive && c.days_inactive > 7 && c.days_inactive <= 14).length}
+                </div>
+                <div className="text-sm text-yellow-700 font-medium">Uyarı</div>
+                <div className="text-xs text-yellow-600">8-14 gün pasif</div>
+              </div>
+            </div>
+            <div className="card bg-gray-50 border-gray-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-600">
+                  {inactiveCustomers.filter(c => !c.days_inactive).length}
+                </div>
+                <div className="text-sm text-gray-700 font-medium">Hiç Sipariş Vermemiş</div>
+                <div className="text-xs text-gray-600">Yeni müşteriler</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Müşteri Listesi */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Pasif Müşteri Listesi</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Müşteri</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Sipariş</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam Sipariş</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksiyon</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {inactiveCustomers.map((customer) => {
+                    const status = getInactiveStatus(customer.days_inactive);
+                    const getActionText = () => {
+                      if (!customer.days_inactive) return 'İlk sipariş için teşvik et';
+                      if (customer.days_inactive > 14) return 'Acil iletişim kur';
+                      if (customer.days_inactive > 7) return 'Hatırlatma gönder';
+                      return 'Normal durum';
+                    };
+                    const getActionColor = () => {
+                      if (!customer.days_inactive) return 'text-blue-600 bg-blue-50';
+                      if (customer.days_inactive > 14) return 'text-red-600 bg-red-50';
+                      if (customer.days_inactive > 7) return 'text-yellow-600 bg-yellow-50';
+                      return 'text-green-600 bg-green-50';
+                    };
+                    return (
+                      <tr key={customer.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                            <div className="text-sm text-gray-500">{customer.phone}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {customer.last_order_date ? formatDate(customer.last_order_date) : 'Hiç sipariş vermemiş'}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-2 h-2 rounded-full ${status.color.replace('text-', 'bg-')}`}></div>
+                            <span className={status.color}>{status.text}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">{customer.total_orders}</td>
+                        <td className="px-4 py-4 text-sm">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionColor()}`}>
+                            {getActionText()}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

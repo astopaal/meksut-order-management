@@ -3,12 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate,
 import CustomerList from './features/customers/CustomerList';
 import CustomerForm from './features/customers/CustomerForm';
 import CustomerDetail from './features/customers/CustomerDetail';
+import SubscriptionList from './features/subscriptions/SubscriptionList';
+import SubscriptionForm from './features/subscriptions/SubscriptionForm';
 import OrderList from './features/orders/OrderList';
 import OrderForm from './features/orders/OrderForm';
 import Dashboard from './features/dashboard/Dashboard';
 import Reports from './features/reports/Reports';
 import type { Customer, OrderWithCustomer, CustomerFormData, OrderFormData } from './types';
-import { customerAPI, orderAPI } from './services/api';
+import { customerAPI, orderAPI, subscriptionAPI } from './services/api';
 
 // Basit Auth Context
 const AuthContext = React.createContext<{ isLoggedIn: boolean; login: (u: string, p: string) => boolean; logout: () => void }>({ isLoggedIn: false, login: () => false, logout: () => {} });
@@ -100,7 +102,7 @@ const LoginPage: React.FC = () => {
           Giriş Yap
         </button>
       </form>
-    </div>
+      </div>
   );
 };
 
@@ -312,6 +314,98 @@ const ReportsPage: React.FC = () => {
   );
 };
 
+const SubscriptionsPage: React.FC = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState<any | null>(null); // Assuming Subscription type is any for now
+  const [loading, setLoading] = useState(false);
+
+  const handleEdit = (subscription: any) => {
+    setEditingSubscription(subscription);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      // Assuming subscriptionAPI.delete exists
+      // await subscriptionAPI.delete(id);
+      console.log('Deleting subscription with ID:', id);
+      // SubscriptionList bileşeni kendi state'ini güncelleyecek
+    } catch (error) {
+      console.error('Error deleting subscription:', error);
+    }
+  };
+
+  const handleSubmit = async (data: any) => { // Assuming SubscriptionFormData is any
+    try {
+      setLoading(true);
+      if (editingSubscription) {
+        await subscriptionAPI.update(editingSubscription.id, data);
+      } else {
+        await subscriptionAPI.create(data);
+      }
+      setShowForm(false);
+      setEditingSubscription(null);
+      // Sayfayı yenilemek için window.location.reload() kullanabiliriz
+      window.location.reload();
+    } catch (error) {
+      console.error('Error saving subscription:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingSubscription(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Abonelik Yönetimi</h1>
+              <p className="text-gray-600">Müşterilerinizin aboneliklerini yönetin ve düzenleyin</p>
+            </div>
+            {!showForm && (
+              <Link
+                to="/subscriptions/new"
+                className="mt-4 sm:mt-0 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Yeni Abonelik Ekle
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {showForm ? (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {editingSubscription ? 'Abonelik Düzenle' : 'Yeni Abonelik Ekle'}
+              </h2>
+            </div>
+            <SubscriptionForm
+              subscription={editingSubscription}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              loading={loading}
+            />
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <SubscriptionList onEdit={handleEdit} onDelete={handleDelete} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const CustomerFormPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -392,6 +486,45 @@ const OrderFormPage: React.FC = () => {
   );
 };
 
+const SubscriptionFormPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (data: any) => {
+    try {
+      setLoading(true);
+      await subscriptionAPI.create(data);
+      navigate('/subscriptions');
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/subscriptions');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Yeni Abonelik</h1>
+          <p className="text-gray-600">Yeni bir abonelik oluşturun</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <SubscriptionForm
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            loading={loading}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Navigation: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -412,7 +545,8 @@ const Navigation: React.FC = () => {
   const navItems = [
     { path: '/', label: 'Dashboard', icon: '📊' },
     { path: '/customers', label: 'Müşteriler', icon: '👥' },
-    { path: '/orders', label: 'Siparişler', icon: '📦' },
+    { path: '/orders', label: 'Siparişler', icon: '🛒' },
+    { path: '/subscriptions', label: 'Abonelikler', icon: '🔄' },
     { path: '/reports', label: 'Raporlar', icon: '📈' },
   ];
 
@@ -574,6 +708,8 @@ const AppRouter: React.FC = () => (
             <Route path="/customers/:id" element={<CustomerDetail />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/orders/new" element={<OrderFormPage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/subscriptions/new" element={<SubscriptionFormPage />} />
             <Route path="/reports" element={<ReportsPage />} />
           </Routes>
         </ProtectedRoute>
@@ -589,6 +725,6 @@ const App: React.FC = () => (
       <AppRouter />
     </Router>
   </AuthProvider>
-);
+  );
 
 export default App;

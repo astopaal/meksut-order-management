@@ -22,7 +22,14 @@ router.get('/', async (req, res) => {
       .select(
         'customers.*',
         db.raw('COUNT(orders.id) as totalOrders'),
-        db.raw('MAX(orders.orderDate) as lastOrderDate')
+        db.raw('MAX(orders.orderDate) as lastOrderDate'),
+        db.raw(`
+          CASE 
+            WHEN MAX(orders.orderDate) IS NULL THEN false
+            WHEN JULIANDAY('now') - JULIANDAY(MAX(orders.orderDate)) > 30 THEN false
+            ELSE true
+          END as isActive
+        `)
       )
       .groupBy('customers.id')
       .orderBy('customers.name');

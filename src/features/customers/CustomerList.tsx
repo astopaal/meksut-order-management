@@ -57,11 +57,35 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
     }
   };
 
+  // Türkçe karakterleri normalize et
+  const normalizeTurkishChars = (text: string) => {
+    return text
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/Ğ/g, 'g')
+      .replace(/Ç/g, 'c')
+      .replace(/Ö/g, 'o')
+      .replace(/Ş/g, 's')
+      .replace(/Ü/g, 'u')
+      .toLowerCase()
+      .replace(/ç/g, 'c')
+      .replace(/ğ/g, 'g')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ş/g, 's')
+      .replace(/ü/g, 'u');
+  };
+
   // Arama filtresi
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone.includes(search)
-  );
+  const filteredCustomers = customers.filter(c => {
+    if (!search.trim()) return true;
+    
+    const searchNormalized = normalizeTurkishChars(search);
+    const nameNormalized = normalizeTurkishChars(c.name);
+    const phoneLower = c.phone.toLowerCase();
+    
+    return nameNormalized.includes(searchNormalized) || phoneLower.includes(searchNormalized);
+  });
   // Pagination hesaplamaları
   const sortedCustomers = [...filteredCustomers].sort((a, b) => {
     let aValue: any = a[sortField];
@@ -89,22 +113,6 @@ const CustomerList: React.FC<CustomerListProps> = ({ onEdit, onDelete }) => {
     setCurrentPage(page);
   };
 
-  const getMapsUrl = (customer: Customer): string | undefined => {
-    if (customer.location) {
-      const coords = LocationService.parseLocation(customer.location);
-      if (coords) {
-        return LocationService.getMapsUrl(coords.latitude, coords.longitude);
-      }
-    }
-    
-    if (customer.address) {
-      return `https://maps.apple.com/?q=${encodeURIComponent(customer.address + ' Altınordu Ordu')}`;
-    }
-    
-    return undefined;
-  };
-
-  // Sıralama başlığı tıklama fonksiyonu
   const handleSort = (field: 'name' | 'phone' | 'lastOrderDate' | 'totalOrders') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');

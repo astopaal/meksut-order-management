@@ -3,7 +3,9 @@ import cors from 'cors';
 import { customerRoutes } from './routes/customers';
 import { orderRoutes } from './routes/orders';
 import { reportRoutes } from './routes/reports';
+import subscriptionsRouter from './routes/subscriptions';
 import { databaseBackup } from './backup';
+import { generateSubscriptionOrders } from './routes/subscriptions';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,6 +18,7 @@ app.use(express.json());
 app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/subscriptions', subscriptionsRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -49,9 +52,18 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(Number(PORT), '0.0.0.0', () => {
+app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-  
+
   // Otomatik yedekleme sistemini başlat
   databaseBackup.startScheduledBackup();
+
+  // Sunucu başlatıldığında abonelik siparişlerini oluştur
+  try {
+    console.log('🔄 Sunucu başlatıldı, abonelik siparişleri otomatik oluşturuluyor...');
+    await generateSubscriptionOrders(7);
+    console.log('✅ Sunucu başlatıldı, abonelik siparişleri otomatik oluşturuldu.');
+  } catch (err) {
+    console.error('❌ Sunucu başlatıldı, abonelik siparişleri otomatik oluşturulamadı:', err);
+  }
 }); 

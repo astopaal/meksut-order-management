@@ -15,10 +15,60 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   loading = false 
 }) => {
   const [formData, setFormData] = useState<CustomerFormData>({
-    name: '',
-    phone: '',
-    address: '',
+    name: customer?.name || '',
+    phone: customer?.phone || '',
+    address: customer?.address || '',
+    district: customer?.district || '',
+    city: customer?.city || '',
   });
+
+  // Telefon numarasını normalize et
+  const normalizePhone = (phone: string) => {
+    // Tüm boşlukları, tireleri ve parantezleri kaldır
+    let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+    
+    // +90 ile başlıyorsa kaldır
+    if (cleaned.startsWith('+90')) {
+      cleaned = cleaned.substring(3);
+    }
+    
+    // Sadece rakamları al
+    cleaned = cleaned.replace(/\D/g, '');
+    
+    // 11 haneli ve 0 ile başlıyorsa olduğu gibi bırak
+    if (cleaned.length === 11 && cleaned.startsWith('0')) {
+      return cleaned;
+    }
+    
+    // 10 haneli ve 5 ile başlıyorsa başına 0 ekle
+    if (cleaned.length === 10 && cleaned.startsWith('5')) {
+      return '0' + cleaned;
+    }
+    
+    // 10 haneli ve 5 ile başlamıyorsa başına 05 ekle
+    if (cleaned.length === 10 && !cleaned.startsWith('5')) {
+      return '05' + cleaned;
+    }
+    
+    // 9 haneli ise başına 05 ekle
+    if (cleaned.length === 9) {
+      return '05' + cleaned;
+    }
+    
+    return cleaned;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const normalized = normalizePhone(e.target.value);
+    setFormData(prev => ({ ...prev, phone: normalized }));
+  };
+
+  const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const normalized = normalizePhone(pastedText);
+    setFormData(prev => ({ ...prev, phone: normalized }));
+  };
 
   useEffect(() => {
     if (customer) {
@@ -83,10 +133,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             id="phone"
             name="phone"
             value={formData.phone}
-            onChange={handleChange}
+            onChange={handlePhoneChange}
+            onPaste={handlePhonePaste}
             required
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-            placeholder="05XX XXX XX XX"
+            placeholder="5xxxxxxxxx"
             pattern="[0-9]{11}"
             title="11 haneli telefon numarası giriniz"
           />

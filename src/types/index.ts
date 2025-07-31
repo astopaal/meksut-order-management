@@ -37,6 +37,8 @@ export interface CustomerFormData {
   name: string;
   phone: string;
   address?: string;
+  district?: string;
+  city?: string;
 }
 
 export interface OrderFormData {
@@ -147,4 +149,20 @@ export interface CustomerAnalytics {
   deliveredOrders: number;
   pendingOrders: number;
   cancelledOrders: number;
+}
+
+export interface SubscriptionFormData {
+  customerId: number;
+  days: string[]; // ['monday', 'wednesday', 'friday']
+  deliveryTime: 'morning' | 'evening';
+  quantity: number;
+  isActive?: boolean;
+}
+
+export interface Subscription extends SubscriptionFormData {
+  id: number;
+  created_at?: string;
+  updated_at?: string;
+  customerName?: string;
+  customerPhone?: string;
 }

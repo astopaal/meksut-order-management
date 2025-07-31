@@ -13,7 +13,8 @@ import type {
   InactiveCustomer,
   DeliveryTimeAnalysis,
   DailyDistribution,
-  CustomerAnalytics
+  CustomerAnalytics,
+  SubscriptionFormData
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -161,5 +162,58 @@ export const reportsAPI = {
   getDailyDistribution: async (): Promise<DailyDistribution[]> => {
     const response = await api.get('/reports/daily-distribution');
     return response.data;
+  },
+}; 
+
+// Abonelik API
+export const subscriptionAPI = {
+  getAll: async () => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions`);
+    if (!response.ok) throw new Error('Abonelikler getirilemedi');
+    return response.json();
+  },
+
+  getByCustomer: async (customerId: number) => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions/customer/${customerId}`);
+    if (!response.ok) throw new Error('Müşteri abonelikleri getirilemedi');
+    return response.json();
+  },
+
+  create: async (data: SubscriptionFormData) => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Abonelik oluşturulamadı');
+    return response.json();
+  },
+
+  update: async (id: number, data: Partial<SubscriptionFormData>) => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Abonelik güncellenemedi');
+    return response.json();
+  },
+
+  delete: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Abonelik silinemedi');
+    return response.json();
+  },
+
+  generateOrders: async (days: number = 7) => {
+    const response = await fetch(`${API_BASE_URL}/subscriptions/generate-orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ days }),
+    });
+    if (!response.ok) throw new Error('Abonelik siparişleri oluşturulamadı');
+    return response.json();
   },
 }; 

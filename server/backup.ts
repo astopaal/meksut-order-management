@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import { db } from './db/db';
+import { generateSubscriptionOrders } from './routes/subscriptions';
 
 class DatabaseBackup {
   private backupDir: string;
@@ -82,7 +83,20 @@ class DatabaseBackup {
       timezone: "Europe/Istanbul"
     });
 
-    console.log('📅 Otomatik yedekleme sistemi başlatıldı (Her gün 20:00)');
+    // Her gün sabah 04:00'te abonelik siparişlerini oluştur
+    cron.schedule('0 4 * * *', async () => {
+      try {
+        console.log('🔄 Abonelik siparişleri otomatik oluşturuluyor...');
+        await generateSubscriptionOrders(7); // 7 gün ileriye
+        console.log('✅ Abonelik siparişleri otomatik oluşturuldu.');
+      } catch (err) {
+        console.error('❌ Abonelik siparişleri otomatik oluşturulamadı:', err);
+      }
+    }, {
+      timezone: "Europe/Istanbul"
+    });
+
+    console.log('📅 Otomatik yedekleme ve abonelik sipariş sistemi başlatıldı (Yedek: 20:00, Abonelik: 04:00)');
   }
 
   public async createManualBackup(): Promise<void> {
