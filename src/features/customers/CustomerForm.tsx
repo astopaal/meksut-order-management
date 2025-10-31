@@ -22,59 +22,70 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     city: customer?.city || '',
   });
 
-  // Telefon numarasını normalize et
-  const normalizePhone = (phone: string) => {
-    // Tüm boşlukları, tireleri ve parantezleri kaldır
-    let cleaned = phone.replace(/[\s\-\(\)]/g, '');
-    
-    // +90 ile başlıyorsa kaldır
-    if (cleaned.startsWith('+90')) {
-      cleaned = cleaned.substring(3);
-    }
-    
+  // Telefon numarasını formatla (5XXXXXXXXX - boşluksuz)
+  const formatPhone = (value: string) => {
     // Sadece rakamları al
-    cleaned = cleaned.replace(/\D/g, '');
+    const numbers = value.replace(/\D/g, '');
     
-    // 11 haneli ve 0 ile başlıyorsa olduğu gibi bırak
-    if (cleaned.length === 11 && cleaned.startsWith('0')) {
-      return cleaned;
+    if (numbers.length === 0) {
+      return '';
     }
     
-    // 10 haneli ve 5 ile başlıyorsa başına 0 ekle
-    if (cleaned.length === 10 && cleaned.startsWith('5')) {
-      return '0' + cleaned;
+    // Eğer 0 ile başlıyorsa kaldır
+    let cleaned = numbers.startsWith('0') ? numbers.substring(1) : numbers;
+    
+    // Eğer 90 ile başlıyorsa kaldır (+90)
+    if (cleaned.startsWith('90') && cleaned.length > 10) {
+      cleaned = cleaned.substring(2);
     }
     
-    // 10 haneli ve 5 ile başlamıyorsa başına 05 ekle
-    if (cleaned.length === 10 && !cleaned.startsWith('5')) {
-      return '05' + cleaned;
+    // Eğer 5 ile başlamıyorsa, ilk karakteri 5 yap
+    if (!cleaned.startsWith('5')) {
+      // İlk karakteri 5 ile değiştir
+      cleaned = '5' + cleaned.substring(1);
     }
     
-    // 9 haneli ise başına 05 ekle
-    if (cleaned.length === 9) {
-      return '05' + cleaned;
-    }
+    // Maksimum 10 rakam (5 ile başlayan: 5 + 9 rakam)
+    cleaned = cleaned.substring(0, 10);
     
+    // Boşluksuz döndür
     return cleaned;
   };
 
+  // Telefon numarasını normalize et (veritabanı için)
+  const normalizePhone = (formattedPhone: string) => {
+    const numbers = formattedPhone.replace(/\D/g, '');
+    // Eğer 10 haneli ve 5 ile başlıyorsa başına 0 ekle
+    if (numbers.length === 10 && numbers.startsWith('5')) {
+      return '0' + numbers;
+    }
+    return numbers;
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const normalized = normalizePhone(e.target.value);
-    setFormData(prev => ({ ...prev, phone: normalized }));
+    const formatted = formatPhone(e.target.value);
+    setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
   const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const normalized = normalizePhone(pastedText);
-    setFormData(prev => ({ ...prev, phone: normalized }));
+    const formatted = formatPhone(pastedText);
+    setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
   useEffect(() => {
     if (customer) {
+      // Telefon numarasını formatla (eğer 0 ile başlıyorsa kaldır)
+      let phoneValue = customer.phone;
+      if (phoneValue.startsWith('0')) {
+        phoneValue = phoneValue.substring(1);
+      }
+      const formattedPhone = formatPhone(phoneValue);
+      
       setFormData({
         name: customer.name,
-        phone: customer.phone,
+        phone: formattedPhone,
         address: customer.address || '',
       });
     }
@@ -82,7 +93,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Telefon numarasını normalize et (veritabanı için 05384956530 formatı)
+    const normalizedData = {
+      ...formData,
+      phone: normalizePhone(formData.phone)
+    };
+    onSubmit(normalizedData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,10 +152,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             onChange={handlePhoneChange}
             onPaste={handlePhonePaste}
             required
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-            placeholder="5xxxxxxxxx"
-            pattern="[0-9]{11}"
-            title="11 haneli telefon numarası giriniz"
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-mono"
+            placeholder="5XXXXXXXXX"
+            maxLength={10}
+            pattern="5[0-9]{9}"
+            title="5 ile başlayan 10 haneli telefon numarası giriniz"
           />
         </div>
       </div>

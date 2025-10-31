@@ -161,8 +161,8 @@ const SubscriptionList: React.FC<SubscriptionListProps> = ({ onEdit, onDelete })
                         {subscription.deliveryTime === 'morning' ? 'Sabah' : 'Akşam'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {subscription.quantity} L
+                    <td className="px-6 py-4 whitespace-nowrap text-lg font-semibold text-gray-900">
+                      {subscription.quantity} B
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {subscription.isActive ? (

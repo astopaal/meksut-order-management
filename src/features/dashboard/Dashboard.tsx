@@ -23,27 +23,17 @@ const Dashboard: React.FC = () => {
   const changelogEntries: ChangelogEntry[] = [
     {
       id: '1',
-      title: 'Türkçe Karakter Desteği',
-      description: 'Müşteri aramasında Türkçe karakter normalizasyonu eklendi, "İbrahim" araması "ibrah" ile bulunabiliyor.'
+      title: 'Müşteri Kaydı Telefon Giriş Sorunları Düzeltildi.',
+      description: 'Müşteri kaydı formunda telefon girişi sorunları düzeltildi. Telefon numarasının formatlanması ve doğrulanması işlevselliği güncellendi.'
     },
     {
       id: '2',
-      title: 'Abonelik Sistemi',
-      description: 'Yeni abonelik sistemi eklendi, müşteri arama dropdown ile yapılıyor ve teslimat saati radio button olarak seçiliyor.'
-    },
-    {
-      id: '3',
-      title: 'Gelişmiş Raporlar',
-      description: 'Pasif müşteriler, trendler ve müşteri analizi sayfaları görsel grafikler ve özet kartları ile geliştirildi.'
-    },
-    {
-      id: '4',
-      title: 'Dashboard İyileştirmesi',
-      description: 'Dashboard tarih seçici yeniden tasarlandı, ok butonları ve tarih kutusu eklendi.'
-    },
+      title: 'Abonelik Bidon Sayısı Kayıt Sorunu Düzeltildi',
+      description: 'Abonelik formunda bidon sayısı değiştirildiğinde kayıt yapılmama sorunu çözüldü. Number input değerleri artık doğru şekilde işleniyor.'
+    }
   ];
 
-  const currentVersion = '1.4.0';
+  const currentVersion = '1.4.1';
 
   useEffect(() => {
     loadDashboardData();

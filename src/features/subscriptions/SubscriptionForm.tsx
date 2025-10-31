@@ -79,6 +79,9 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
+    } else if (type === 'number') {
+      const numValue = parseInt(value, 10) || 0;
+      setFormData(prev => ({ ...prev, [name]: numValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
