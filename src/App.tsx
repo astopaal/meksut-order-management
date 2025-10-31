@@ -588,7 +588,15 @@ const Navigation: React.FC = () => {
                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <span className="mr-2">{item.icon}</span>
+                {item.path === '/reports' ? (
+                  <img 
+                    src="/aha-kizimin-aminin-raporu.webp" 
+                    alt="Raporlar" 
+                    className="mr-2 w-5 h-5 object-contain"
+                  />
+                ) : (
+                  <span className="mr-2">{item.icon}</span>
+                )}
                 {item.label}
               </Link>
             ))}
@@ -674,7 +682,15 @@ const Navigation: React.FC = () => {
                       : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
                   }`}
                 >
-                  <span className="mr-3">{item.icon}</span>
+                  {item.path === '/reports' ? (
+                    <img 
+                      src="/aha-kizimin-aminin-raporu.webp" 
+                      alt="Raporlar" 
+                      className="mr-3 w-5 h-5 object-contain inline-block"
+                    />
+                  ) : (
+                    <span className="mr-3">{item.icon}</span>
+                  )}
                   {item.label}
                 </Link>
               ))}

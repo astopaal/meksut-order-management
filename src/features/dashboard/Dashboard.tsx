@@ -23,17 +23,12 @@ const Dashboard: React.FC = () => {
   const changelogEntries: ChangelogEntry[] = [
     {
       id: '1',
-      title: 'Müşteri Kaydı Telefon Giriş Sorunları Düzeltildi.',
-      description: 'Müşteri kaydı formunda telefon girişi sorunları düzeltildi. Telefon numarasının formatlanması ve doğrulanması işlevselliği güncellendi.'
-    },
-    {
-      id: '2',
-      title: 'Abonelik Bidon Sayısı Kayıt Sorunu Düzeltildi',
-      description: 'Abonelik formunda bidon sayısı değiştirildiğinde kayıt yapılmama sorunu çözüldü. Number input değerleri artık doğru şekilde işleniyor.'
+      title: 'Raporlar iconu degistirildi.',
+      description: 'Rapor ikonu için grafik kaldırıldı, yerine kızının amını raporunu gösteren keyfanı eklendi.'
     }
   ];
 
-  const currentVersion = '1.4.1';
+  const currentVersion = '1.4.2';
 
   useEffect(() => {
     loadDashboardData();
